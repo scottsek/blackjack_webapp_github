@@ -26,9 +26,9 @@
 </div>
 
 <p>
-  What would you like to do?
   <%= session[:player].name %> has <%= session[:player].points_total %>.
   <% if @show_buttons %>
+  Hit or stay?
   <form id="hit_form" action="/game/player/hit" method='post'>
     <input type="submit" class="btn btn-success" value="Hit" />
   </form>

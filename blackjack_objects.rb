@@ -126,7 +126,7 @@ end
 
 class Player
   include Hand
-  attr_accessor :name, :cards
+  attr_accessor :name, :cards, :hand_state
   def initialize()
     @cards = []
   end

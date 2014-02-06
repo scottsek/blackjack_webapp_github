@@ -12,6 +12,35 @@ helpers do
       "<img src='/images/cards/#{card.suit_word}_#{card.rank_word}.jpg' class='card_image'>"
     end 
   end
+
+  def send_message!(current_player)
+    blackjack = current_player.has_blackjack?
+    busted = current_player.has_busted?
+    player_name = current_player.name
+    if blackjack or busted then
+      @show_buttons = false
+      @game_over = true
+    end
+    case player_name
+    when "Dealer"
+      if blackjack
+        @error = "#{session[:dealer].name} has blackjack"
+      elsif busted
+        @success = "#{player_name} busted. #{session[:player].name} wins."
+      elsif current_player.points_total <= 17
+        @show_dealer_hit_button = true
+      else
+        redirect '/game/compare_hands'
+      end
+    else
+      if blackjack
+        @success = "#{session[:player].name} has blackjack" 
+      end
+      if busted
+        @error = "#{session[:player].name} has busted"
+      end
+    end
+  end
 end
 
 before do
@@ -45,6 +74,7 @@ post '/new_player' do
 end
 
 get '/game' do
+  
   session[:shoe] = Shoe.new
   session[:dealer] = Dealer.new
   session[:dealer].name = "Dealer"
@@ -57,33 +87,27 @@ get '/game' do
   
   if session[:player].has_blackjack?
     @success = "#{session[:player].name} has blackjack"
+    @show_buttons = false
+    @game_over = true
   end
   erb :game
+end
+post '/game/same_player' do
+  session[:player].cards = []
+  redirect '/game'
 end
 
 post '/game/player/hit' do
   session[:player].cards << session[:shoe].deal_card
-  if session[:player].has_blackjack?
-    @success = "#{session[:player].name} has blackjack"
-  end
-  if session[:player].has_busted?
-    @error = "#{session[:player].name} has busted"
-  end
+  send_message!(session[:player])
   erb :game
 end
 
 get '/game/dealer' do
   @show_buttons = false
+  @show_dealer_hit_button = false
   session[:dealer].cards[0].face_down = false
-  if session[:dealer].has_blackjack?
-    @error = "#{session[:dealer].name} has blackjack"
-  elsif session[:dealer].has_busted?
-    @success = "#{session[:dealer].name} busted. #{session[:player].name} wins."
-  elsif session[:dealer].no_hit?
-    redirect '/game/compare_hands'
-  else
-    @show_dealer_hit_button = true
-  end
+  send_message!(session[:dealer])
   erb :game
 end
 
@@ -100,6 +124,7 @@ get '/game/compare_hands' do
   else
     @success = "#{prefix_it} ties the dealer."
   end
+  @game_over = true
   erb :game
 end
 

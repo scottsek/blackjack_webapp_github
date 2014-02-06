@@ -11,20 +11,26 @@
       <div class="navbar-inner">
         <div class="container">
             <ul class="nav">
-              <li><a href="/new_player">New Game</a></li>
+              <li><a href="/new_player">Start Over</a></li>
             </ul>
         </div>
       </div>
     </div>
 
   <div class="container">
+    <%if @game_over %>
+      <form id="again_form" action="/game/same_player" method='post'>
+        <input type="submit" class="btn btn-success" value="Play again" />
+      </form>
+    <%end%>
+    <%= yield %> 
     <%if @error %>
       <div class="alert alert-error"><%=@error%></div>
     <% end %>
     <%if @success %>
       <div class="alert alert-success"><%=@success%></div>
     <% end %>
-  <%= yield %>
+  
   </div>
   </body>
 </html>
